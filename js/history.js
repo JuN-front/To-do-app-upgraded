@@ -1,8 +1,13 @@
-// js/history.js
 import { $, $$ } from './dom.js';
 import { getHistory, recoverFromHistory, removeFromHistory } from './storage.js';
 
 const list = $('#historyList');
+const modal = $('#confirmModal');
+const cancelBtn = $('#cancelDelete');
+const confirmBtn = $('#confirmDelete');
+
+let pendingDeleteId = null;
+
 render();
 
 function render(){
@@ -27,18 +32,15 @@ function render(){
 
     const meta = document.createElement('span');
     meta.className = 'small muted';
-    const when = new Date(item.completedAt).toLocaleString();
-    meta.textContent = `Completed: ${when}`;
+    meta.textContent = `Completed: ${new Date(item.completedAt).toLocaleString()}`;
 
     const recoverBtn = document.createElement('button');
     recoverBtn.className = 'icon-btn';
     recoverBtn.textContent = 'Recover';
-    recoverBtn.title = 'Recover to active tasks';
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'icon-btn icon-danger';
     removeBtn.textContent = 'Delete';
-    removeBtn.title = 'Remove from history';
 
     li.append(title, meta, recoverBtn, removeBtn);
     list.appendChild(li);
@@ -48,8 +50,30 @@ function render(){
       render();
     });
     removeBtn.addEventListener('click', () => {
-      removeFromHistory(item.id);
-      render();
+      pendingDeleteId = item.id;
+      modal.hidden = false;
     });
   });
 }
+
+// --- Modal controls ---
+cancelBtn.addEventListener('click', () => {
+  pendingDeleteId = null;
+  modal.hidden = true;
+});
+confirmBtn.addEventListener('click', () => {
+  if (pendingDeleteId) {
+    removeFromHistory(pendingDeleteId);
+    pendingDeleteId = null;
+    render();
+  }
+  modal.hidden = true;
+});
+
+// Optional: close modal on background click
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.hidden = true;
+    pendingDeleteId = null;
+  }
+});
