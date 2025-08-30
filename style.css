@@ -99,11 +99,13 @@ h1{ margin:0 0 8px; letter-spacing:.02em }
   color:var(--text); 
   border:1px solid var(--text);
   border-radius:10px; 
+  cursor:pointer;
 }
 
 .btn-danger{ 
   background:var(--danger);
   border-radius:10px; 
+  cursor:pointer;
 }
 
 .alert{
