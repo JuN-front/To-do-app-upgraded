@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TODO APP</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>TODO APP</h1>
+    <nav class="tabs">
+      <a class="tab tab-active" href="index.html" aria-current="page">Tasks</a>
+      <a class="tab" href="history.html">History</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="add-row" aria-label="Add a task">
+      <input
+        id="taskInput"
+        type="text"
+        placeholder="Add a task..."
+        aria-label="Task name"
+        autocomplete="off"
+      />
+      <button id="addBtn" class="btn">Add Task</button>
+    </section>
+
+    <div id="alert" class="alert" role="status" aria-live="polite" hidden></div>
+
+    <ul id="taskList" class="card-list" aria-label="Task list"></ul>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
