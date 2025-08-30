@@ -20,17 +20,17 @@
     <ul id="historyList" class="card-list" aria-label="Completed tasks"></ul>
   </main>
 
-  <!-- Confirm Delete Modal -->
- <div id="confirmModal" class="modal" hidden>
-  <div class="modal-content">
-    <h2>Delete Task?</h2>
-    <p>This will permanently remove the task from history. Are you sure?</p>
+<!-- Confirm Delete Modal -->
+<div id="confirmModal" class="modal" hidden aria-modal="true" role="dialog">
+  <div class="modal-content" role="document">
+    <h2 id="modalTitle">Delete this Task?</h2>
+    <p id="modalMsg">This will permanently remove the task from history. Are you sure?</p>
     <div class="modal-actions">
-      <button id="cancelDelete" class="btn-ghost">Cancel</button>
-      <button id="confirmDelete" class="btn-danger">Delete</button>
+      <button id="cancelDelete" class="btn-ghost" type="button">Cancel</button>
+      <button id="confirmDelete" class="btn-danger" type="button">Delete</button>
     </div>
   </div>
- </div>
+</div>
 
   <script type="module" src="js/history.js"></script>
 </body>

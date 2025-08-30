@@ -181,6 +181,9 @@ h1{ margin:0 0 8px; letter-spacing:.02em }
   margin-top:6px 
 }
 
+/* Always respect [hidden] even if other display styles exist */
+[hidden] { display: none !important; }
+
 /* ===== Modal ===== */
 .modal {
   position: fixed; 
@@ -188,28 +191,29 @@ h1{ margin:0 0 8px; letter-spacing:.02em }
   display: flex; 
   align-items: center; 
   justify-content: center;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.45);
   z-index: 1000;
 }
 
 .modal-content {
   background: #fff; 
   border-radius: var(--radius);
-  max-width: 400px; 
-  width: 90%;
+  max-width: 420px; 
+  width: 92%;
   padding: 24px;
   box-shadow: var(--shadow);
 }
 
-.modal-content h2 {
-  margin-top: 0;
-  font-size: 20px;
+.modal-content h2 { 
+  margin: 0 0 8px; 
+  font-size: 20px; 
 }
 
-.modal-actions {
-  display: flex; 
-  justify-content: flex-end; 
-  gap: 12px; 
-  margin-top: 20px;
+.modal-actions { 
+  display:flex; 
+  justify-content:flex-end; 
+  gap:12px; 
+  margin-top: 18px; 
 }
+
 
