@@ -1,19 +1,61 @@
+// js/history.js
 import { $ } from './dom.js';
 import { getHistory, recoverFromHistory, removeFromHistory } from './storage.js';
 
 const list = $('#historyList');
-
-// Modal elements
-const modal = $('#confirmModal');
-const cancelBtn = $('#cancelDelete');
-const confirmBtn = $('#confirmDelete');
-const modalTitle = $('#modalTitle');
-const modalMsg = $('#modalMsg');
-
-let pendingDeleteId = null;
-
 render();
 
+/* ---------- Programmatic Confirm Modal ---------- */
+function confirmDeleteModal(taskName) {
+  return new Promise((resolve) => {
+    // Build elements
+    const overlay = document.createElement('div');
+    overlay.className = 'modal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+
+    const box = document.createElement('div');
+    box.className = 'modal-content';
+    box.innerHTML = `
+      <h2>Delete Task?</h2>
+      <p>This will permanently remove "${escapeHtml(taskName)}" from history. Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" type="button" id="mCancel">Cancel</button>
+        <button class="btn-danger" type="button" id="mDelete">Delete</button>
+      </div>
+    `;
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const cancelBtn = $('#mCancel', overlay);
+    const deleteBtn = $('#mDelete', overlay);
+
+    const close = (result) => {
+      // cleanup listeners + DOM
+      overlay.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onEsc);
+      overlay.remove();
+      resolve(result);
+    };
+    const onBackdrop = (e) => { if (e.target === overlay) close(false); };
+    const onEsc = (e) => { if (e.key === 'Escape') close(false); };
+
+    cancelBtn.addEventListener('click', () => close(false));
+    deleteBtn.addEventListener('click', () => close(true));
+    overlay.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onEsc);
+
+    // Focus the destructive button for quick keyboard confirm
+    deleteBtn.focus();
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Render History ---------- */
 function render(){
   const items = getHistory();
   list.innerHTML = '';
@@ -45,7 +87,7 @@ function render(){
     recoverBtn.title = 'Recover to active tasks';
 
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'icon-btn icon-danger btn-delete';
+    removeBtn.className = 'icon-btn icon-danger';
     removeBtn.textContent = 'Delete';
     removeBtn.title = 'Remove from history';
 
@@ -57,39 +99,12 @@ function render(){
       render();
     });
 
-    // Open modal only on delete click
-    removeBtn.addEventListener('click', () => openModal(item.id, item.name));
+    removeBtn.addEventListener('click', async () => {
+      const ok = await confirmDeleteModal(item.name);
+      if (ok) {
+        removeFromHistory(item.id);
+        render();
+      }
+    });
   });
 }
-
-/* ---------- Modal control ---------- */
-function openModal(id, name){
-  pendingDeleteId = id;
-  if (modalTitle) modalTitle.textContent = 'Delete Task?';
-  if (modalMsg) modalMsg.textContent = `This will permanently remove "${name}" from history. Are you sure?`;
-  modal.hidden = false;               // show
-  confirmBtn?.focus();
-}
-function closeModal(){
-  pendingDeleteId = null;
-  modal.hidden = true;                // hide
-}
-
-cancelBtn?.addEventListener('click', closeModal);
-confirmBtn?.addEventListener('click', () => {
-  if (pendingDeleteId){
-    removeFromHistory(pendingDeleteId);
-    closeModal();
-    render();
-  }
-});
-
-// Close when clicking the dark backdrop
-modal?.addEventListener('click', (e) => {
-  if (e.target === modal) closeModal();
-});
-
-// Optional: Esc to close
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !modal.hidden) closeModal();
-});
