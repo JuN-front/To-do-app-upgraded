@@ -20,8 +20,13 @@ body{
   background:var(--bg); color:var(--text);
 }
 
-.app-header{ text-align:center; padding:24px 16px 12px }
-h1{ margin:0 0 8px; letter-spacing:.02em }
+.app-header{ text-align:center; 
+  padding:24px 16px 12px 
+}
+
+h1{ margin:0 0 8px; 
+  letter-spacing:.02em 
+}
 
 .tabs{
   display:inline-flex; 
