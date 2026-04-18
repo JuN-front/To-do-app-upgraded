@@ -17,7 +17,7 @@ function write(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 export function getTasks() { return read(TASKS_KEY); }
 export function setTasks(tasks){ write(TASKS_KEY, tasks); }
 export function addTask(name){
-  const trimmed = name.trim();
+  const trimmed = String(name).trim();
   if (!trimmed) return null;
   const tasks = getTasks();
   const t = { id: uid(), name: trimmed, createdAt: now() };
@@ -29,14 +29,13 @@ export function renameTask(id, newName){
   const tasks = getTasks();
   const t = tasks.find(x => x.id === id);
   if (!t) return false;
-  const trimmed = newName.trim();
+  const trimmed = String(newName).trim();
   if (!trimmed) return false;
   t.name = trimmed;
   setTasks(tasks);
   return true;
 }
 export function completeTask(id){
-  // remove from tasks and push to history with completedAt timestamp
   const tasks = getTasks();
   const idx = tasks.findIndex(x => x.id === id);
   if (idx === -1) return null;
@@ -50,9 +49,13 @@ export function completeTask(id){
 }
 
 export function deleteTask(id){
-  // pure delete without history (not used, but handy)
   const tasks = getTasks().filter(t => t.id !== id);
   setTasks(tasks);
+  return true;
+}
+
+export function clearHistory(){
+  write(HISTORY_KEY, []);
 }
 
 // --- History

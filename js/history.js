@@ -1,61 +1,88 @@
 // js/history.js
 import { $ } from './dom.js';
-import { getHistory, recoverFromHistory, removeFromHistory } from './storage.js';
+import { getHistory, recoverFromHistory, removeFromHistory, clearHistory } from './storage.js';
 
 const list = $('#historyList');
+const clearHistoryBtn = $('#clearHistoryBtn');
+const modal = $('#confirmModal');
+const modalTitle = $('#modalTitle');
+const modalMsg = $('#modalMsg');
+const cancelBtn = $('#cancelDelete');
+const confirmBtn = $('#confirmDelete');
+
+clearHistoryBtn?.addEventListener('click', async () => {
+  const confirmed = await openConfirm(
+    'Clear history?','This will permanently remove all completed tasks. Continue?'
+  );
+  if (confirmed) {
+    clearHistory();
+    render();
+  }
+});
+
+list.addEventListener('click', async event => {
+  const button = event.target.closest('button');
+  if (!button) return;
+
+  const action = button.dataset.action;
+  const row = button.closest('li');
+  const id = row?.dataset.id;
+  if (!action || !id) return;
+
+  if (action === 'recover') {
+    recoverFromHistory(id);
+    render();
+    return;
+  }
+
+  if (action === 'delete') {
+    const confirmed = await openConfirm(
+      'Delete task?',
+      `This will permanently remove "${row.querySelector('.title')?.textContent ?? 'this task'}" from history.`
+    );
+    if (confirmed) {
+      removeFromHistory(id);
+      render();
+    }
+  }
+});
+
 render();
 
-/* ---------- Programmatic Confirm Modal ---------- */
-function confirmDeleteModal(taskName) {
-  return new Promise((resolve) => {
-    // Build elements
-    const overlay = document.createElement('div');
-    overlay.className = 'modal';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
+function openConfirm(title, message) {
+  return new Promise(resolve => {
+    modalTitle.textContent = title;
+    modalMsg.textContent = message;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    confirmBtn.focus();
 
-    const box = document.createElement('div');
-    box.className = 'modal-content';
-    box.innerHTML = `
-      <h2>Delete Task?</h2>
-      <p>This will permanently remove "${escapeHtml(taskName)}" from history. Are you sure?</p>
-      <div class="modal-actions">
-        <button class="btn-ghost" type="button" id="mCancel">Cancel</button>
-        <button class="btn-danger" type="button" id="mDelete">Delete</button>
-      </div>
-    `;
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    const cancelBtn = $('#mCancel', overlay);
-    const deleteBtn = $('#mDelete', overlay);
-
-    const close = (result) => {
-      // cleanup listeners + DOM
-      overlay.removeEventListener('click', onBackdrop);
-      document.removeEventListener('keydown', onEsc);
-      overlay.remove();
+    const close = result => {
+      cleanup();
+      modal.hidden = true;
+      document.body.style.overflow = '';
       resolve(result);
     };
-    const onBackdrop = (e) => { if (e.target === overlay) close(false); };
-    const onEsc = (e) => { if (e.key === 'Escape') close(false); };
 
-    cancelBtn.addEventListener('click', () => close(false));
-    deleteBtn.addEventListener('click', () => close(true));
-    overlay.addEventListener('click', onBackdrop);
+    const onBackdrop = e => { if (e.target === modal) close(false); };
+    const onEsc = e => { if (e.key === 'Escape') close(false); };
+    const onCancel = () => close(false);
+    const onConfirm = () => close(true);
+
+    modal.addEventListener('click', onBackdrop);
     document.addEventListener('keydown', onEsc);
+    cancelBtn.addEventListener('click', onCancel);
+    confirmBtn.addEventListener('click', onConfirm);
 
-    // Focus the destructive button for quick keyboard confirm
-    deleteBtn.focus();
+    function cleanup() {
+      modal.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onEsc);
+      cancelBtn.removeEventListener('click', onCancel);
+      confirmBtn.removeEventListener('click', onConfirm);
+    }
   });
 }
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ---------- Render History ---------- */
 function render(){
   const items = getHistory();
   list.innerHTML = '';
@@ -83,28 +110,19 @@ function render(){
 
     const recoverBtn = document.createElement('button');
     recoverBtn.className = 'icon-btn';
+    recoverBtn.type = 'button';
     recoverBtn.textContent = 'Recover';
     recoverBtn.title = 'Recover to active tasks';
+    recoverBtn.dataset.action = 'recover';
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'icon-btn icon-danger';
+    removeBtn.type = 'button';
     removeBtn.textContent = 'Delete';
     removeBtn.title = 'Remove from history';
+    removeBtn.dataset.action = 'delete';
 
     li.append(title, meta, recoverBtn, removeBtn);
     list.appendChild(li);
-
-    recoverBtn.addEventListener('click', () => {
-      recoverFromHistory(item.id);
-      render();
-    });
-
-    removeBtn.addEventListener('click', async () => {
-      const ok = await confirmDeleteModal(item.name);
-      if (ok) {
-        removeFromHistory(item.id);
-        render();
-      }
-    });
   });
 }

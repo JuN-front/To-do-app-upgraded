@@ -197,6 +197,12 @@ h1{ margin:0 0 8px;
 /* Ensure any [hidden] nodes are invisible */
 [hidden]{ display:none !important; }
 
+.task-form{ display:flex; gap:10px; width:100%; }
+.stats-panel{ margin:16px 0 0; }
+.stats-card{ display:inline-flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); padding:12px 14px; border-radius:12px; box-shadow:var(--shadow); color:var(--text); }
+.history-header{ display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+
 /* Modal visuals */
 .modal {
   position: fixed; 

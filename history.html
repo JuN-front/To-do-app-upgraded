@@ -16,7 +16,10 @@
   </header>
 
   <main class="container">
-    <p class="muted">Completed tasks are kept here for 30 days. You can recover them.</p>
+    <div class="history-header">
+      <p class="muted">Completed tasks are kept here for 30 days. You can recover them.</p>
+      <button id="clearHistoryBtn" class="btn btn-ghost" type="button">Clear history</button>
+    </div>
     <ul id="historyList" class="card-list" aria-label="Completed tasks"></ul>
   </main>
 
